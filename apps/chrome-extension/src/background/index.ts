@@ -1,0 +1,1 @@
+// Service worker, right-click context menu handler

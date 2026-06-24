@@ -1,0 +1,22 @@
+{
+  "manifest_version": 3,
+  "name": "KotobaFlow AI",
+  "version": "1.0.0",
+  "description": "Japanese pitch accent overlay helper for Google Docs.",
+  "permissions": ["contextMenus", "activeTab"],
+  "background": {
+    "service_worker": "src/background/index.ts",
+    "type": "module"
+  },
+  "content_scripts": [
+    {
+      "matches": ["https://docs.google.com/document/*"],
+      "js": ["src/content/furigana.ts", "src/content/overlay.ts"]
+    }
+  ],
+  "icons": {
+    "16": "public/icons/icon16.png",
+    "48": "public/icons/icon48.png",
+    "128": "public/icons/icon128.png"
+  }
+}

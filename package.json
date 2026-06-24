@@ -1,0 +1,26 @@
+{
+  "name": "kotobaflow-monorepo",
+  "version": "1.0.0",
+  "description": "KotobaFlow AI - Japanese Linguistic Assistant Chrome Extension & P-SEO Companion",
+  "private": true,
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ],
+  "scripts": {
+    "dev": "npm run dev --workspace=apps/chrome-extension",
+    "dev:web": "npm run dev --workspace=apps/web-companion",
+    "build": "npm run build --workspaces",
+    "build:extension": "npm run build --workspace=apps/chrome-extension",
+    "build:web": "npm run build --workspace=apps/web-companion"
+  },
+  "keywords": [
+    "japanese",
+    "linguistics",
+    "chrome-extension",
+    "pitch-accent",
+    "furigana"
+  ],
+  "author": "",
+  "license": "ISC"
+}

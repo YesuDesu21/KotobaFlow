@@ -1,0 +1,1 @@
+// Shadow DOM canvas wrapper for SVG pitch graphs

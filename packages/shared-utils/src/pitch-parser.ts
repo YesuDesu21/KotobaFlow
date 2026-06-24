@@ -1,0 +1,1 @@
+//Common logic for rendering H/L strings to SVG coordinates
