@@ -60,7 +60,15 @@ export interface SVGCoordinates {
   path: string;
   points: Array<{ x: number; y: number }>;
   viewBox: string;
+  width: number;
+  height: number;
 }
+
+// Shared visual constants for SVG pitch contour rendering
+export const HIGH_Y = 10;
+export const LOW_Y = 40;
+export const SPACING = 50;
+export const START_X = 20;
 
 // ============================================================================
 // Pattern Type to H/L Sequence Conversion
@@ -192,8 +200,17 @@ export function aiStringToPitchPattern(
 
 /**
  * Infers pattern type from H/L sequence
+ *
+ * Note: Heiban and Odaka produce identical sequences in isolation
+ * (both L H H...). The distinction only manifests with particle attachment.
+ * 1-mora words are classified as Heiban (accentless default).
  */
 function inferPatternType(sequence: ('H' | 'L')[]): 'Heiban' | 'Atamadaka' | 'Nakadaka' | 'Odaka' {
+  // Single-mora: all patterns look identical in isolation; default to Heiban
+  if (sequence.length <= 1) {
+    return 'Heiban';
+  }
+
   if (sequence[0] === 'H') {
     return 'Atamadaka';
   }
@@ -235,13 +252,7 @@ function findDownstepIndex(sequence: ('H' | 'L')[]): number {
  * - Horizontal spacing: 60px per mora
  */
 export function sequenceToSVG(sequence: ('H' | 'L')[]): SVGCoordinates {
-  const HIGH_Y = 10;
-  const LOW_Y = 40;
-  const SPACING = 60;
-  const START_X = 30;
-
   const points: Array<{ x: number; y: number }> = [];
-  const pathCommands: string[] = [];
 
   // Generate points for each mora
   sequence.forEach((pitch, index) => {
@@ -256,11 +267,13 @@ export function sequenceToSVG(sequence: ('H' | 'L')[]): SVGCoordinates {
       path: '',
       points: [],
       viewBox: '0 0 0 0',
+      width: 0,
+      height: 0,
     };
   }
 
   // Start at first point
-  pathCommands.push(`M ${points[0].x} ${points[0].y}`);
+  const pathCommands: string[] = [`M ${points[0].x} ${points[0].y}`];
 
   // Draw lines to subsequent points
   for (let i = 1; i < points.length; i++) {
@@ -279,6 +292,8 @@ export function sequenceToSVG(sequence: ('H' | 'L')[]): SVGCoordinates {
     path: pathCommands.join(' '),
     points,
     viewBox: `0 0 ${width} ${height}`,
+    width,
+    height,
   };
 }
 
@@ -322,20 +337,25 @@ export function countMora(kana: string): number {
 }
 
 /**
- * Validates pitch accent data structure
+ * Validates pitch accent data structure.
+ * Returns `true` if valid, or a descriptive error string if invalid.
  */
-export function validatePitchAccentData(data: PitchAccentData): boolean {
-  if (!data.reading || data.moraCount <= 0) {
-    return false;
+export function validatePitchAccentData(data: PitchAccentData): true | string {
+  if (!data.reading) {
+    return 'Missing reading';
+  }
+
+  if (data.moraCount <= 0) {
+    return `Invalid moraCount: ${data.moraCount}`;
   }
 
   if (data.pitchPattern.sequence.length !== data.moraCount) {
-    return false;
+    return `Sequence length (${data.pitchPattern.sequence.length}) does not match moraCount (${data.moraCount})`;
   }
 
   const validTypes = ['Heiban', 'Atamadaka', 'Nakadaka', 'Odaka'];
   if (!validTypes.includes(data.pitchPattern.type)) {
-    return false;
+    return `Invalid pitch pattern type: ${data.pitchPattern.type}`;
   }
 
   return true;

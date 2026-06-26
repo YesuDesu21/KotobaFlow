@@ -70,3 +70,7 @@ apps/*/pnpm-lock.yaml
 packages/*/package-lock.json
 packages/*/yarn.lock
 packages/*/pnpm-lock.yaml
+.vercel
+
+# Vercel
+.vercel

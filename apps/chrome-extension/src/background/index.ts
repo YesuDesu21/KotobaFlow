@@ -1,51 +1,45 @@
-/**
- * KotobaFlow AI — Background Service Worker
- *
- * Manifest V3 service worker responsibilities:
- * 1. Create right-click context menus for pitch accent and print actions
- * 2. Broker messages between content scripts and the Genkit backend
- * 3. Manage the print-template tab lifecycle
- */
 import type { AnalysisResult } from '../shared/types';
-
-// ============================================================================
-// Configuration
-// ============================================================================
 
 const GENKIT_API_BASE = 'http://localhost:4000';
 const ANALYZE_FLOW_PATH = '/api/flow/analyzeSentence';
-
-// ============================================================================
-// Context Menu IDs
-// ============================================================================
 
 const MENU_PARENT = 'kotobaflow-parent';
 const MENU_SHOW_PITCH = 'show-pitch-accent';
 const MENU_PREPARE_PRINT = 'prepare-for-print';
 
-// ============================================================================
-// Initialization
-// ============================================================================
+console.log('[KotobaFlow] Service worker started');
+console.log('[KotobaFlow] contextMenus API available:', !!chrome.contextMenus);
 
-chrome.runtime.onInstalled.addListener(() => {
+// Create parent menu first, then children in its callback
+chrome.contextMenus.removeAll(() => {
   chrome.contextMenus.create({
     id: MENU_PARENT,
     title: 'KotobaFlow AI',
     contexts: ['selection'],
-  });
-
-  chrome.contextMenus.create({
-    id: MENU_SHOW_PITCH,
-    parentId: MENU_PARENT,
-    title: 'Show Pitch Accent',
-    contexts: ['selection'],
-  });
-
-  chrome.contextMenus.create({
-    id: MENU_PREPARE_PRINT,
-    parentId: MENU_PARENT,
-    title: 'Prepare for Print',
-    contexts: ['selection'],
+  }, () => {
+    if (chrome.runtime.lastError) {
+      console.error('[KotobaFlow] Parent menu error:', chrome.runtime.lastError);
+      return;
+    }
+    console.log('[KotobaFlow] Parent menu created');
+    chrome.contextMenus.create({
+      id: MENU_SHOW_PITCH,
+      parentId: MENU_PARENT,
+      title: 'Show Pitch Accent',
+      contexts: ['selection'],
+    }, () => {
+      if (chrome.runtime.lastError) console.error('[KotobaFlow] Show pitch error:', chrome.runtime.lastError);
+      else console.log('[KotobaFlow] Show Pitch menu created');
+    });
+    chrome.contextMenus.create({
+      id: MENU_PREPARE_PRINT,
+      parentId: MENU_PARENT,
+      title: 'Prepare for Print',
+      contexts: ['selection'],
+    }, () => {
+      if (chrome.runtime.lastError) console.error('[KotobaFlow] Print menu error:', chrome.runtime.lastError);
+      else console.log('[KotobaFlow] Print menu created');
+    });
   });
 });
 
@@ -70,10 +64,10 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
 // Message Handler (from content scripts)
 // ============================================================================
 
-chrome.runtime.onMessage.addListener((message, sender) => {
+chrome.runtime.onMessage.addListener((message: any, sender) => {
   if (message.action === 'ANALYZE_TEXT') {
     if (sender.tab?.id) {
-      handleAnalyzeText(message.text, sender.tab.id);
+      handleAnalyzeText(message.text, sender.tab.id, message.seq);
     }
   }
 });
@@ -100,9 +94,9 @@ async function handleShowPitchAccent(text: string, tabId: number): Promise<void>
   }
 }
 
-async function handleAnalyzeText(text: string, tabId: number): Promise<void> {
+async function handleAnalyzeText(text: string, tabId: number, seq?: number): Promise<void> {
   try {
-    const result = await callAnalyzeFlow(text);
+    const result = await callAnalyzeFlow(text, seq);
     await chrome.tabs.sendMessage(tabId, {
       action: 'PITCH_ACCENT_RESULT',
       requestAction: 'ANALYZE_TEXT',
@@ -125,7 +119,7 @@ async function handlePreparePrint(text: string, tabId: number): Promise<void> {
       printData: { text, tokens: result.tokens },
     });
     await chrome.tabs.create({
-      url: chrome.runtime.getURL('public/print-template.html'),
+      url: chrome.runtime.getURL('print-template.html'),
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : 'Unknown error';
@@ -141,12 +135,14 @@ async function handlePreparePrint(text: string, tabId: number): Promise<void> {
 // Genkit API Client
 // ============================================================================
 
-async function callAnalyzeFlow(sentence: string): Promise<AnalysisResult> {
+async function callAnalyzeFlow(sentence: string, seq?: number): Promise<AnalysisResult> {
   const url = `${GENKIT_API_BASE}${ANALYZE_FLOW_PATH}`;
+  const body: Record<string, unknown> = { sentence };
+  if (seq !== undefined) body.seq = seq;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ sentence }),
+    body: JSON.stringify(body),
   });
 
   if (!response.ok) {

@@ -4,6 +4,7 @@
   "version": "1.0.0",
   "description": "Japanese pitch accent overlay helper for Google Docs.",
   "permissions": ["contextMenus", "activeTab", "storage"],
+  "host_permissions": ["http://localhost:4000/*"],
   "background": {
     "service_worker": "src/background/index.ts",
     "type": "module"
@@ -11,7 +12,14 @@
   "content_scripts": [
     {
       "matches": ["https://docs.google.com/document/*"],
-      "js": ["src/content/furigana.ts", "src/content/overlay.ts"]
+      "js": ["src/content/furigana.ts", "src/content/overlay.ts"],
+      "run_at": "document_start"
+    }
+  ],
+  "web_accessible_resources": [
+    {
+      "resources": ["annotate.js"],
+      "matches": ["https://docs.google.com/*"]
     }
   ],
   "icons": {

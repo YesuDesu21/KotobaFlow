@@ -42,6 +42,7 @@ export interface AnalysisResult {
   tokens: TokenData[];
   sentence: string;
   timestamp: number;
+  seq?: number;
 }
 
 // ============================================================================
@@ -51,17 +52,13 @@ export interface AnalysisResult {
 export interface AnalyzeTextRequest {
   action: 'ANALYZE_TEXT';
   text: string;
+  /** Monotonic sequence counter for stale-response detection in the content script */
+  seq?: number;
 }
 
 export interface ShowPitchAccentRequest {
   action: 'SHOW_PITCH_ACCENT';
   text: string;
-}
-
-export interface PrepareForPrintRequest {
-  action: 'PREPARE_FOR_PRINT';
-  text: string;
-  tokens: TokenData[];
 }
 
 /** Fired by the background worker to ask the content script for selected text */
@@ -71,8 +68,7 @@ export interface GetSelectedTextRequest {
 
 export type ContentToBackgroundMessage =
   | AnalyzeTextRequest
-  | ShowPitchAccentRequest
-  | PrepareForPrintRequest;
+  | ShowPitchAccentRequest;
 
 // ============================================================================
 // Background Worker → Content Script Messages
@@ -108,10 +104,4 @@ export type ExtensionMessage =
   | ContentToBackgroundMessage
   | BackgroundToContentMessage;
 
-// ============================================================================
-// SendMessage return type for the Promise-based API
-// ============================================================================
 
-export type SendMessageResponse =
-  | { success: true; data: AnalysisResult }
-  | { success: false; error: string };

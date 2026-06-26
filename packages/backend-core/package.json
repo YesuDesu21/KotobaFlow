@@ -6,8 +6,9 @@
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
     "seed": "tsx src/scripts/seed-database.ts",
-    "start": "genkit start -- tsx src/server.ts",
-    "dev": "genkit start -- tsx src/server.ts",
+    "start": "tsx src/api-server.ts",
+    "dev": "tsx src/api-server.ts",
+    "dev:genkit": "genkit start -- tsx src/server.ts",
     "test:analyzer": "tsx src/scripts/test-analyzer.ts"
   },
   "keywords": [],
@@ -22,7 +23,10 @@
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.28.0",
+    "@kotobaflow/shared-utils": "*",
+    "cors": "^2.8.5",
     "dotenv": "^17.4.2",
+    "express": "^4.21.0",
     "genkit": "^1.38.0",
     "sql.js": "^1.10.0",
     "zod": "^3.25.76"

@@ -28,10 +28,22 @@ function main() {
     manifest.background.service_worker = PATH_MAP[manifest.background.service_worker] || manifest.background.service_worker;
   }
 
+  // Service worker is a classic script, not an ES module (Vite outputs UMD-style)
+  if (manifest.background?.type) {
+    delete manifest.background.type;
+  }
+
   // Strip public/ prefix from icon paths (Vite copies publicDir to output root)
   if (manifest.icons) {
     for (const key of Object.keys(manifest.icons)) {
       manifest.icons[key] = manifest.icons[key].replace(/^public\//, '');
+    }
+  }
+
+  // annotate.js is in public/ — Vite copies it to output root as-is
+  if (manifest.web_accessible_resources) {
+    for (const war of manifest.web_accessible_resources) {
+      war.resources = war.resources.map(r => r.replace(/^public\//, ''));
     }
   }
 

@@ -203,6 +203,11 @@
   window.addEventListener('afterprint', function () {
     window.close();
   });
+
+  // Fallback: afterprint doesn't fire on Linux or print-to-PDF workflows
+  setTimeout(function () {
+    window.close();
+  }, 30_000);
 })();
 </script>
 </body>

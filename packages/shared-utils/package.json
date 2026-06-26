@@ -1,13 +1,13 @@
 {
   "name": "@kotobaflow/shared-utils",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Shared pitch accent utilities for KotobaFlow",
+  "main": "src/pitch-parser.ts",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "commonjs"
+  "type": "module"
 }

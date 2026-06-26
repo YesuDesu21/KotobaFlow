@@ -19,6 +19,7 @@
 import { Metadata } from "next";
 import Link from "next/link";
 import { getWordData, getRelatedWords } from "@/data/pitch-accent-data";
+import { sequenceToSVG, START_X, SPACING, HIGH_Y, LOW_Y } from "@kotobaflow/shared-utils";
 
 export const dynamic = "force-static";
 
@@ -57,11 +58,6 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
  *   - Line extends with a tail after the final mora
  */
 function PitchSvg({ sequence }: { sequence: ("H" | "L")[] }) {
-  const HIGH_Y = 10;
-  const LOW_Y = 40;
-  const SPACING = 50;
-  const START_X = 20;
-
   const points = sequence.map((p, i) => ({
     x: START_X + i * SPACING,
     y: p === "H" ? HIGH_Y : LOW_Y,
@@ -69,19 +65,11 @@ function PitchSvg({ sequence }: { sequence: ("H" | "L")[] }) {
 
   if (points.length === 0) return null;
 
-  const pathCmds = [`M ${points[0].x} ${points[0].y}`];
-  for (let i = 1; i < points.length; i++) {
-    pathCmds.push(`L ${points[i].x} ${points[i].y}`);
-  }
-  const last = points[points.length - 1];
-  pathCmds.push(`L ${last.x + SPACING / 2} ${last.y}`);
-
-  const w = last.x + SPACING / 2 + 20;
-  const h = 50;
+  const svg = sequenceToSVG(sequence);
 
   return (
-    <svg className="w-full h-auto" viewBox={`0 0 ${w} ${h}`} xmlns="http://www.w3.org/2000/svg">
-      <path d={pathCmds.join(" ")} fill="none" stroke="#4F46E5" strokeWidth="2.5" strokeLinejoin="round" />
+    <svg className="w-full h-auto" viewBox={svg.viewBox} xmlns="http://www.w3.org/2000/svg">
+      <path d={svg.path} fill="none" stroke="#4F46E5" strokeWidth="2.5" strokeLinejoin="round" />
       {points.map((p, i) => (
         <circle key={i} cx={p.x} cy={p.y} r={p.y === HIGH_Y ? 4 : 3.5} fill={p.y === HIGH_Y ? "#4F46E5" : "#9ca3af"} />
       ))}

@@ -171,8 +171,8 @@ const sampleData = [
     english_definition: 'To drink',
     part_of_speech: 'Verb-Godan',
     mora_count: 2,
-    pitch_type: 'Heiban',
-    downstep_index: -1,
+    pitch_type: 'Atamadaka',
+    downstep_index: 0,
   },
   {
     kanji: '行く',
@@ -180,8 +180,8 @@ const sampleData = [
     english_definition: 'To go',
     part_of_speech: 'Verb-Godan',
     mora_count: 2,
-    pitch_type: 'Heiban',
-    downstep_index: -1,
+    pitch_type: 'Atamadaka',
+    downstep_index: 0,
   },
   {
     kanji: '来る',
@@ -237,6 +237,37 @@ async function seedDatabase(): Promise<void> {
   db.run('PRAGMA foreign_keys = ON');
   
   try {
+    // Ensure tables exist (will no-op if already present)
+    console.log('📦 Ensuring database schema...');
+    db.run(`
+      CREATE TABLE IF NOT EXISTS lexicon (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        kanji TEXT,
+        reading TEXT NOT NULL,
+        english_definition TEXT NOT NULL,
+        part_of_speech TEXT NOT NULL,
+        mora_count INTEGER NOT NULL
+      )
+    `);
+    db.run(`
+      CREATE TABLE IF NOT EXISTS pitch_accent (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lexicon_id INTEGER NOT NULL,
+        base_pattern_type TEXT NOT NULL,
+        downstep_index INTEGER NOT NULL,
+        FOREIGN KEY (lexicon_id) REFERENCES lexicon(id)
+      )
+    `);
+    db.run(`
+      CREATE TABLE IF NOT EXISTS seo_metadata (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        lexicon_id INTEGER NOT NULL,
+        slug TEXT NOT NULL,
+        search_volume_weight REAL DEFAULT 0,
+        FOREIGN KEY (lexicon_id) REFERENCES lexicon(id)
+      )
+    `);
+
     // Clear existing data (in reverse order of foreign key dependencies)
     console.log('🧹 Clearing existing data...');
     db.run('DELETE FROM seo_metadata');

@@ -55,6 +55,23 @@ const TokenizerResponseSchema = z.object({
 });
 
 /**
+ * Attempts to parse a string as JSON, with fallback for markdown-fenced code blocks.
+ * Groq may wrap JSON in ```json ... ``` fences despite the response_format hint.
+ */
+function safeParseJson(raw: string): unknown {
+  try {
+    return JSON.parse(raw);
+  } catch {
+    // Try extracting content from markdown code fences
+    const fenceMatch = raw.match(/```(?:json)?\s*([\s\S]*?)```/);
+    if (fenceMatch) {
+      return JSON.parse(fenceMatch[1].trim());
+    }
+    throw new Error(`Tokenizer: Groq returned invalid JSON. Response preview: ${raw.slice(0, 200)}`);
+  }
+}
+
+/**
  * Calls Groq API for structured JSON output.
  */
 async function callGroq(prompt: string): Promise<unknown> {
@@ -82,6 +99,7 @@ async function callGroq(prompt: string): Promise<unknown> {
       response_format: { type: 'json_object' },
       temperature: 0.1,
     }),
+    signal: AbortSignal.timeout(20_000),
   });
 
   if (!response.ok) {
@@ -95,7 +113,7 @@ async function callGroq(prompt: string): Promise<unknown> {
     throw new Error('Tokenizer: Groq returned empty response');
   }
 
-  return JSON.parse(content);
+  return safeParseJson(content);
 }
 
 /**

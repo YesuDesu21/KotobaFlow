@@ -9,6 +9,9 @@
     "preview": "vite preview",
     "pack": "npm run build && node scripts/pack-extension.mjs"
   },
+  "dependencies": {
+    "@kotobaflow/shared-utils": "*"
+  },
   "devDependencies": {
     "@types/chrome": "^0.2.0",
     "typescript": "~6.0.2",

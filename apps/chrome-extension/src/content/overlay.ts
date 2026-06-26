@@ -7,52 +7,7 @@
  * each word's H/L pitch sequence as an inline SVG path.
  */
 import type { BackgroundToContentMessage, TokenData } from '../shared/types';
-
-// ============================================================================
-// SVG Pitch Contour Engine (mirrors pitch-parser.ts sequenceToSVG logic)
-// ============================================================================
-
-interface SVGOutput {
-  path: string;
-  viewBox: string;
-  width: number;
-  height: number;
-}
-
-function pitchSequenceToSVG(sequence: ('H' | 'L')[]): SVGOutput {
-  const HIGH_Y = 10;
-  const LOW_Y = 40;
-  const SPACING = 50;
-  const START_X = 20;
-  const n = sequence.length;
-
-  const points: Array<{ x: number; y: number }> = [];
-  const pathCmds: string[] = [];
-
-  for (let i = 0; i < n; i++) {
-    const x = START_X + i * SPACING;
-    const y = sequence[i] === 'H' ? HIGH_Y : LOW_Y;
-    points.push({ x, y });
-  }
-
-  if (points.length === 0) {
-    return { path: '', viewBox: '0 0 0 0', width: 0, height: 0 };
-  }
-
-  pathCmds.push(`M ${points[0].x} ${points[0].y}`);
-  for (let i = 1; i < points.length; i++) {
-    pathCmds.push(`L ${points[i].x} ${points[i].y}`);
-  }
-
-  const last = points[points.length - 1];
-  const finalX = last.x + SPACING / 2;
-  pathCmds.push(`L ${finalX} ${last.y}`);
-
-  const w = finalX + 20;
-  const h = 50;
-
-  return { path: pathCmds.join(' '), viewBox: `0 0 ${w} ${h}`, width: w, height: h };
-}
+import { sequenceToSVG, START_X, SPACING, HIGH_Y, LOW_Y } from '@kotobaflow/shared-utils';
 
 // ============================================================================
 // Shadow DOM Overlay
@@ -245,16 +200,41 @@ function renderOverlay(tokens: TokenData[]): void {
     overlayRoot = null;
   };
 
+  const onKeyDown = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') dismiss();
+  };
+
   closeBtn.addEventListener('click', dismiss);
   backdrop.addEventListener('click', dismiss);
+  document.addEventListener('keydown', onKeyDown);
+
+  // Clean up the keydown listener when the host element is removed
+  const host = root.host as HTMLElement;
+  const observer = new MutationObserver(() => {
+    if (!document.contains(host)) {
+      document.removeEventListener('keydown', onKeyDown);
+      observer.disconnect();
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
 }
 
 /**
  * Builds the HTML for a single word card including its SVG pitch contour.
  */
 function renderWordCard(token: TokenData): string {
-  const pa = token.pitchAccent!;
-  const svg = pitchSequenceToSVG(pa.pitchPattern.sequence);
+  const pa = token.pitchAccent;
+  if (!pa || !pa.pitchPattern || !pa.reading) {
+    return `
+      <div class="word-card">
+        <div class="word-header">
+          <span class="word-surface">${escapeHtml(token.surface)}</span>
+          <span class="word-reading">—</span>
+        </div>
+      </div>
+    `;
+  }
+  const svg = sequenceToSVG(pa.pitchPattern.sequence);
 
   return `
     <div class="word-card">
@@ -267,12 +247,12 @@ function renderWordCard(token: TokenData): string {
            xmlns="http://www.w3.org/2000/svg">
         <path d="${svg.path}" stroke="#4F46E5"/>
         ${pa.pitchPattern.sequence.map((p, i) => {
-          const x = 20 + i * 50;
-          const y = p === 'H' ? 10 : 40;
+          const x = START_X + i * SPACING;
+          const y = p === 'H' ? HIGH_Y : LOW_Y;
           return `<circle class="mora-dot-${p}" cx="${x}" cy="${y}"/>`;
         }).join('')}
         ${pa.pitchPattern.sequence.map((_, i) => {
-          const x = 20 + i * 50;
+          const x = START_X + i * SPACING;
           return `<text class="mora-label" x="${x}" y="48">${i + 1}</text>`;
         }).join('')}
       </svg>
@@ -280,7 +260,8 @@ function renderWordCard(token: TokenData): string {
   `;
 }
 
-function escapeHtml(text: string): string {
+function escapeHtml(text: string | null | undefined): string {
+  if (text == null) return '';
   const map: Record<string, string> = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
   return text.replace(/[&<>"']/g, c => map[c] || c);
 }

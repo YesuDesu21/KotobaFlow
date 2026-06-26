@@ -9,7 +9,20 @@ import {
   PitchAccentData,
   LexiconRow,
   PitchAccentRow,
-} from '../../../shared-utils/src/pitch-parser';
+} from '@kotobaflow/shared-utils';
+
+/**
+ * Validated pitch pattern types — throws if the DB value is unexpected.
+ */
+const VALID_PATTERN_TYPES = ['Heiban', 'Atamadaka', 'Nakadaka', 'Odaka'] as const;
+type PatternType = (typeof VALID_PATTERN_TYPES)[number];
+
+function parsePatternType(raw: string): PatternType {
+  if ((VALID_PATTERN_TYPES as readonly string[]).includes(raw)) {
+    return raw as PatternType;
+  }
+  throw new Error(`Invalid base_pattern_type in database: "${raw}". Expected one of: ${VALID_PATTERN_TYPES.join(', ')}`);
+}
 
 /**
  * Enhanced token with pitch accent data
@@ -28,6 +41,7 @@ export interface EnhancedToken {
  * Acoustic agent input schema
  */
 export interface AcousticInput {
+  sentence: string;
   tokens: Array<{
     surface: string;
     reading: string;
@@ -52,7 +66,7 @@ export interface AcousticOutput {
  * Uses the pitch-parser to convert database data into standardized schemas and SVG coordinates
  */
 export async function acoustic(input: AcousticInput): Promise<AcousticOutput> {
-  const { tokens } = input;
+  const { sentence, tokens } = input;
 
   // Enrich each token with pitch accent data
   const enhancedTokens: EnhancedToken[] = await Promise.all(
@@ -88,7 +102,7 @@ export async function acoustic(input: AcousticInput): Promise<AcousticOutput> {
             const pitchRow: PitchAccentRow = {
               id: databaseEntry.id,
               lexicon_id: databaseEntry.id,
-              base_pattern_type: databaseEntry.base_pattern_type as 'Heiban' | 'Atamadaka' | 'Nakadaka' | 'Odaka',
+              base_pattern_type: parsePatternType(databaseEntry.base_pattern_type),
               downstep_index: databaseEntry.downstep_index,
             };
             pitchAccent = databaseToPitchAccentData(lexiconRow, pitchRow);
@@ -106,8 +120,7 @@ export async function acoustic(input: AcousticInput): Promise<AcousticOutput> {
     })
   );
 
-  // Reconstruct sentence from tokens
-  const sentence = enhancedTokens.map(t => t.surface).join('');
+  // Preserve original sentence (do not reconstruct from tokens)
 
   return {
     tokens: enhancedTokens,
