@@ -1,5 +1,5 @@
 {
-  "name": "shared-utils",
+  "name": "@kotobaflow/shared-utils",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",

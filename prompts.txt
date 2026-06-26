@@ -1,0 +1,22 @@
+Audience: I am a system architect and a panelist.
+
+Role: You are an AI Engineer and a developer.
+
+Goal: To be able to implement the furigana/pitch accent google docs browser extension 
+
+task: I want you to read, analyze, and understand the system I am trying to build: @README.md @ER-Diagram.jpg @AI-Workflow.jpg . 
+The system being built must be very dependent on the design, which is the file structure written inside the README file. Then I want you to understand and analyze the whole system by checking the whole project. And after you do that we will follow the roadmap of the development @roadmap.md . I finished working on the phase 2 last time but I want you to verify and validate the current state of the development.
+
+Notes to take: 
+-Every time you have to add a new file, since we rely on the file structure, you have to tell me and I will be asking questions if I have any. Defend your decisions and convince me why is it wise to add one.
+
+- Every time you have to modify something in the project or read, you will have to ask me for my permission. Do not access sensitive files such as the env; instead, ask me for its contents since I will not provide the API keys
+
+Additional info: Since I changed some of the documentation such as number 7.5 in @roadmap.md you may also need to help me implement this part but ensure to review the project first
+
+
+```
+(Ignore everything around the ` block)
+Other notes taken from other LLM:
+"We rejected heavy binary dictionary tokenizers like Kuromoji to optimize for serverless efficiency. Loading a 20MB dictionary file creates serverless cold-start bottlenecks on free cloud tiers. Instead, we offloaded morphological chunking directly to our LLM pipeline via Genkit structural JSON schema inputs, maintaining a lean, instant-response runtime execution layer
+```

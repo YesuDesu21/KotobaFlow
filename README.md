@@ -11,6 +11,7 @@ A production-grade, serverless Manifest V3 Chrome Extension and Programmatic SEO
 * **Native Google Docs Furigana Layer:** Automatically processes Japanese text on screen and dynamically injects readable Furigana overlays above structural Kanji words.
 * **Contextual Pitch Accent Analysis:** Highlight any Japanese phrase, right-click, and select *"Show Pitch Accent"* to render an explicit, high/low pitch contour mapping over every individual mora.
 * **Acoustic Downstepping Resolution:** Uses generative AI workflows to dynamically resolve real-world phonetic shifts, particle attachments, and verbal conjugation pitch modifications ($kifuku$).
+* **Print-Ready Furigana Layouts:** Bridges the Google Docs HTML5 Canvas limitation by generating an isolated, native HTML `<ruby>` formatting template window. This allows users to review, scale, and print flawless stacked-furigana sheets using standard physical printing workflows (`Ctrl + P`).
 * **Programmatic SEO Companion Platform:** A high-scale, ultra-fast Next.js directory that automatically serves thousands of search-optimized landing pages targeting long-tail language learning keywords to drive extension installs at zero cost.
 
 ---
@@ -19,7 +20,7 @@ A production-grade, serverless Manifest V3 Chrome Extension and Programmatic SEO
 
 The system is designed as a decoupled, multi-tier serverless system maximizing efficiency to operate at exactly **$0.00 infrastructure cost**:
 
-![Alt text goes here](AI-Workflow.jpg)
+![Work Flow](AI-Workflow.jpg)
 
 ```
 kotobaflow-monorepo/
@@ -33,13 +34,14 @@ kotobaflow-monorepo/
 │   │   ├── vite.config.ts          # Fast bundling configuration
 │   │   ├── src/
 │   │   │   ├── background/
-│   │   │   │   └── index.ts        # Service worker, right-click context menu handler
+│   │   │   │   └── index.ts        # Service worker, context menu handler, print-tab window lifecycle
 │   │   │   ├── content/
 │   │   │   │   ├── furigana.ts     # Google Docs surface monitoring & overlay injection
 │   │   │   │   └── overlay.ts      # Shadow DOM canvas wrapper for SVG pitch graphs
 │   │   │   └── shared/
 │   │   │       └── types.ts        # Client-side messaging interface definitions
 │   │   └── public/
+│   │       ├── print-template.html # Clean CSS-print template shell utilizing semantic  tags
 │   │       └── icons/              # Extension brand asset sizes (16, 48, 128)
 │   │
 │   └── web-companion/              # 2. NEXT.JS P-SEO COMPANION WEB APP
@@ -75,6 +77,8 @@ kotobaflow-monorepo/
 │       └── src/
 │           └── pitch-parser.ts     # Common logic for rendering H/L strings to SVG coordinates
 ```
+## ER Diagram
+![ER Diagram](ER-Diagram.jpg)
 ---
 
 ## 🛠️ Required Technical Stack

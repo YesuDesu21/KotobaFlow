@@ -4,17 +4,27 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "tsx src/scripts/seed-database.ts",
+    "start": "genkit start -- tsx src/server.ts",
+    "dev": "genkit start -- tsx src/server.ts",
+    "test:analyzer": "tsx src/scripts/test-analyzer.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "type": "commonjs",
   "devDependencies": {
-    "genkit-cli": "^1.38.0"
+    "@types/node": "^20.0.0",
+    "@types/sql.js": "^1.4.11",
+    "genkit-cli": "^1.38.0",
+    "tsx": "^4.0.0"
   },
   "dependencies": {
     "@genkit-ai/googleai": "^1.28.0",
-    "genkit": "^1.38.0"
+    "dotenv": "^17.4.2",
+    "genkit": "^1.38.0",
+    "sql.js": "^1.10.0",
+    "zod": "^3.25.76"
   }
 }
