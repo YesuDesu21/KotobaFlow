@@ -8,7 +8,7 @@ A production-grade, serverless Manifest V3 Chrome Extension and Programmatic SEO
 
 ## 🌟 Key Features
 
-* **Native Google Docs Furigana Layer:** Automatically processes Japanese text on screen and dynamically injects readable Furigana overlays above structural Kanji words.
+* **Native Google Docs Furigana Layer:** Monitors user input inside the Google Docs interface using a debounced idle-detection mechanism (triggering safely 1.5–2 seconds after typing pauses). This minimizes unnecessary API overhead and dynamically injects readable Furigana overlays above structural Kanji words without causing performance lag.
 * **Contextual Pitch Accent Analysis:** Highlight any Japanese phrase, right-click, and select *"Show Pitch Accent"* to render an explicit, high/low pitch contour mapping over every individual mora.
 * **Acoustic Downstepping Resolution:** Uses generative AI workflows to dynamically resolve real-world phonetic shifts, particle attachments, and verbal conjugation pitch modifications ($kifuku$).
 * **Print-Ready Furigana Layouts:** Bridges the Google Docs HTML5 Canvas limitation by generating an isolated, native HTML `<ruby>` formatting template window. This allows users to review, scale, and print flawless stacked-furigana sheets using standard physical printing workflows (`Ctrl + P`).

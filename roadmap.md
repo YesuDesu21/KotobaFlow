@@ -19,7 +19,7 @@ Step 5: Verify everything inside your running Genkit Developer UI (localhost:400
 ## Phase 3: The Chrome Extension Layer (Client-Side Ingestion)
 With an active backend API endpoint ready to answer, you can now build the interface that reads directly from a user's active screen.
 
-Step 6: Code the Content Script (apps/chrome-extension/src/content/furigana.ts). Write the DOM scraping engine that safely parses the internal structure of a Google Docs canvas element or text field to find selected phrases.
+Step 6: Code the Content Script (`apps/chrome-extension/src/content/furigana.ts`). Write the DOM scraping engine that monitors the Google Docs workspace surface. Implement a 1.5-to-2-second debounced idle-detection event loop that intercepts typing pauses, grabs the newly modified raw text blocks safely from the canvas proxy layers, and sends them down the pipeline.
 
 Step 7: Code the Extension Background Worker (apps/chrome-extension/src/background/index.ts). Write the script that intercepts context menus, catches selected Japanese text, sends a quick HTTP POST request to your local Genkit backend server, and replies to the content script.
 
