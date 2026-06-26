@@ -333,8 +333,10 @@ function renderFurigana(result: AnalysisResult): void {
 
   let html = '';
   for (const token of result.tokens) {
-    if (token.pitchAccent?.reading && token.surface !== token.pitchAccent.reading) {
-      html += `<ruby style="ruby-position:over">${escapeHtml(token.surface)}<rt>${escapeHtml(token.pitchAccent.reading)}</rt></ruby>`;
+    // Use pitch accent reading from DB, or fall back to tokenizer reading
+    const reading = token.pitchAccent?.reading || token.reading;
+    if (reading && token.surface !== reading) {
+      html += `<ruby style="ruby-position:over">${escapeHtml(token.surface)}<rt>${escapeHtml(reading)}</rt></ruby>`;
     } else if (token.isParticle) {
       html += `<span style="color:#9ca3af">${escapeHtml(token.surface)}</span>`;
     } else {
