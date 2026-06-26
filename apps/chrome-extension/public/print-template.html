@@ -1,4 +1,23 @@
 <!DOCTYPE html>
+<!--
+  KotobaFlow AI — Print-Engine Template
+
+  This is a standalone HTML page opened by the background service worker
+  in a new tab when the user selects "Prepare for Print" from the
+  right-click context menu.
+
+  Data flow:
+    1. Background worker calls Genkit API, stores { text, tokens }
+       in chrome.storage.session under key "printData".
+    2. Opens this page via chrome.tabs.create().
+    3. On load, the inline script reads chrome.storage.session.get('printData')
+       and renders <ruby> annotations.
+    4. Triggers window.print() on a 300ms delay to allow CSS layout to settle.
+    5. On afterprint, closes the tab.
+
+  This approach bridges Google Docs' canvas limitation — the print template
+  renders native HTML <ruby> that the browser's print engine understands.
+-->
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
